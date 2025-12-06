@@ -18,3 +18,16 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/* Custom styles for Social Embeds to ensure they fit containers */
+.social-embed-container iframe {
+  max-width: 100% !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.social-embed-container .instagram-media {
+  min-width: auto !important;
+  width: 100% !important;
+  margin: 0 !important;
+}

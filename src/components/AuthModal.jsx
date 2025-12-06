@@ -88,7 +88,7 @@ const AuthModal = () => {
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {authMode === 'login' ? 'Welcome Back' : 'Join InfluenceMatch'}
+                {authMode === 'login' ? 'Welcome Back' : 'Join Influence Hub'}
               </h2>
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -127,11 +127,7 @@ const AuthModal = () => {
                         onChange={handleInputChange}
                         className="sr-only"
                       />
-                      <div className={`p-3 border rounded-xl text-center transition-all ${
-                        formData.userType === 'startup' 
-                          ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/30' 
-                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
-                      }`}>
+                      <div className={`p-3 border rounded-xl text-center transition-all ${formData.userType === 'startup' ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/30' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
                         <div className="font-medium">Startup / Brand</div>
                       </div>
                     </label>
@@ -144,11 +140,7 @@ const AuthModal = () => {
                         onChange={handleInputChange}
                         className="sr-only"
                       />
-                      <div className={`p-3 border rounded-xl text-center transition-all ${
-                        formData.userType === 'influencer' 
-                          ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/30' 
-                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
-                      }`}>
+                      <div className={`p-3 border rounded-xl text-center transition-all ${formData.userType === 'influencer' ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/30' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
                         <div className="font-medium">Influencer</div>
                       </div>
                     </label>
@@ -192,8 +184,8 @@ const AuthModal = () => {
 
               {authMode === 'signup' && formData.userType === 'influencer' && (
                 <div className="space-y-4 pt-2">
-                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Verification Details</p>
-                  <div className="relative">
+                   <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Verification Details</p>
+                   <div className="relative">
                     <SafeIcon icon={FiInstagram} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-pink-500 w-5 h-5" />
                     <input
                       type="text"
@@ -283,7 +275,7 @@ const AuthModal = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="relative">
+                     <div className="relative">
                       <SafeIcon icon={FiMapPin} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                       <input
                         type="text"
@@ -297,9 +289,9 @@ const AuthModal = () => {
                     </div>
                     <div className="relative">
                       <SafeIcon icon={FiBriefcase} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <select
-                        name="companySize"
-                        value={formData.companySize}
+                      <select 
+                        name="companySize" 
+                        value={formData.companySize} 
                         onChange={handleInputChange}
                         className="glass-input w-full pl-9 pr-4 py-3 rounded-xl focus:outline-none text-slate-900 dark:text-white"
                         required
@@ -369,7 +361,7 @@ const AuthModal = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all font-semibold text-lg mt-4"
+                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all font-semibold text-lg mt-4"
               >
                 {authMode === 'login' ? 'Log In' : 'Create Account'}
               </motion.button>
@@ -380,7 +372,7 @@ const AuthModal = () => {
                 {authMode === 'login' ? "Don't have an account?" : "Already have an account?"}
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                  className="ml-2 text-purple-600 dark:text-purple-400 hover:underline font-bold"
+                  className="ml-2 text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
                 >
                   {authMode === 'login' ? 'Sign up' : 'Log in'}
                 </button>

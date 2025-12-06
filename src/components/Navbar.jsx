@@ -6,7 +6,7 @@ import SafeIcon from '../common/SafeIcon';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
-const { FiSun, FiMoon, FiSettings, FiHome } = FiIcons;
+const { FiSun, FiMoon, FiSettings, FiHome, FiGrid } = FiIcons;
 
 const Navbar = () => {
   const { isDark, toggleTheme } = useTheme();
@@ -29,11 +29,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex justify-between items-center h-full">
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-xl">IM</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+              <span className="text-white font-bold text-xl">IH</span>
             </div>
-            <span className="text-xl font-bold text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">
-              InfluenceMatch
+            <span className="text-xl font-bold text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+              Influence Hub
             </span>
           </Link>
 
@@ -43,10 +43,11 @@ const Navbar = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:text-purple-600 dark:hover:text-purple-300 transition-colors shadow-sm"
-                  title="Feed"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors shadow-sm flex items-center space-x-2"
+                  title="Showcase"
                 >
-                  <SafeIcon icon={FiHome} className="w-5 h-5" />
+                  <SafeIcon icon={FiGrid} className="w-5 h-5" />
+                  <span className="hidden md:inline text-sm font-medium">Showcase</span>
                 </motion.button>
               </Link>
             )}
@@ -66,7 +67,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleDashboard}
-                  className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-md hover:shadow-lg hover:shadow-purple-500/25 transition-all"
+                  className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl shadow-md hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
                 >
                   <SafeIcon icon={FiSettings} className="w-4 h-4" />
                   <span className="hidden sm:inline font-medium">Dashboard</span>
@@ -78,7 +79,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => openAuthModal('login')}
-                  className="px-5 py-2.5 text-slate-700 dark:text-white font-bold hover:text-purple-600 dark:hover:text-purple-300 transition-colors"
+                  className="px-5 py-2.5 text-slate-700 dark:text-white font-bold hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
                 >
                   Log In
                 </motion.button>

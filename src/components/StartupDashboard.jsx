@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import SocialEmbed from '../common/SocialEmbed';
 import { useAuth } from '../context/AuthContext';
 
-const { FiSearch, FiFilter, FiUsers, FiTrendingUp, FiDollarSign, FiEye, FiHeart, FiStar, FiGrid, FiPlus, FiLink, FiVideo, FiImage, FiTrash2, FiExternalLink, FiSettings, FiLogOut } = FiIcons;
+const { FiSearch, FiFilter, FiUsers, FiTrendingUp, FiDollarSign, FiEye, FiHeart, FiStar, FiGrid, FiPlus, FiLink, FiVideo, FiImage, FiTrash2, FiExternalLink, FiSettings, FiLogOut, FiCode } = FiIcons;
 
 const StartupDashboard = () => {
   const { logout } = useAuth();
@@ -18,7 +19,6 @@ const StartupDashboard = () => {
       id: 1,
       platform: 'youtube',
       url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
       title: 'Product Launch Event 2024',
       views: '250K'
     },
@@ -26,34 +26,33 @@ const StartupDashboard = () => {
       id: 2,
       platform: 'instagram',
       url: 'https://www.instagram.com/p/Cdb12345/',
-      thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=600&fit=crop',
       title: 'Company Culture Spotlight',
       likes: '1.2K'
     }
   ]);
-
   const [newPost, setNewPost] = useState({ platform: 'instagram', url: '', title: '' });
 
   const handleAddPost = (e) => {
     e.preventDefault();
+    
+    // Check if input is HTML code or URL
+    const isHtml = newPost.url.trim().startsWith('<');
+
     const newItem = {
       id: Date.now(),
       platform: newPost.platform,
-      url: newPost.url,
       title: newPost.title,
-      thumbnail: newPost.platform === 'youtube' ? `https://img.youtube.com/vi/${getYouTubeID(newPost.url)}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=600&fit=crop', // Generic office placeholder
+      // Store HTML if provided
+      embedHtml: isHtml ? newPost.url : null,
+      url: isHtml ? null : newPost.url,
+      thumbnail: !isHtml && newPost.platform !== 'youtube' ? 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=600&fit=crop' : null,
       views: '0',
       likes: '0'
     };
+
     setPortfolioItems([newItem, ...portfolioItems]);
     setNewPost({ platform: 'instagram', url: '', title: '' });
     setShowAddPost(false);
-  };
-
-  const getYouTubeID = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   const handleDeletePost = (id) => {
@@ -61,26 +60,8 @@ const StartupDashboard = () => {
   };
 
   const savedInfluencers = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      category: 'lifestyle',
-      followers: 45000,
-      engagement: 4.2,
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=400&h=400&fit=crop&crop=face',
-      priceRange: '$500-1000',
-      lastContact: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Alex Chen',
-      category: 'tech',
-      followers: 32000,
-      engagement: 5.1,
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
-      priceRange: '$300-700',
-      lastContact: '2024-01-18'
-    }
+    { id: 1, name: 'Sarah Johnson', category: 'lifestyle', followers: 45000, engagement: 4.2, image: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=400&h=400&fit=crop&crop=face', priceRange: '$500-1000', lastContact: '2024-01-15' },
+    { id: 2, name: 'Alex Chen', category: 'tech', followers: 32000, engagement: 5.1, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face', priceRange: '$300-700', lastContact: '2024-01-18' }
   ];
 
   const campaigns = [
@@ -200,11 +181,7 @@ const StartupDashboard = () => {
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
                   <SafeIcon icon={FiSearch} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-300 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search by name, category, or keywords..."
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-slate-900 dark:text-white placeholder-slate-400 shadow-sm"
-                  />
+                  <input type="text" placeholder="Search by name, category, or keywords..." className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-slate-900 dark:text-white placeholder-slate-400 shadow-sm" />
                 </div>
                 <div className="flex items-center space-x-2 relative">
                   <SafeIcon icon={FiFilter} className="absolute left-4 z-10 text-slate-400 dark:text-slate-300 w-5 h-5" />
@@ -362,20 +339,20 @@ const StartupDashboard = () => {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Content URL / Embed Link</label>
+                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Content URL / Embed Code</label>
                           <div className="relative">
-                            <SafeIcon icon={FiLink} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                            <SafeIcon icon={FiCode} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                             <input
-                              type="url"
+                              type="text"
                               value={newPost.url}
                               onChange={(e) => setNewPost({ ...newPost, url: e.target.value })}
-                              placeholder="https://..."
-                              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none text-slate-900 dark:text-white"
+                              placeholder="https://... or Paste Embed Code <blockquote...>"
+                              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none text-slate-900 dark:text-white font-mono text-sm"
                               required
                             />
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                            Paste the full URL of your social media post or video.
+                            Paste the full URL or Embed Code (HTML) of your social media post.
                           </p>
                         </div>
                         <div className="flex justify-end">
@@ -400,56 +377,35 @@ const StartupDashboard = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="glass-panel rounded-2xl overflow-hidden group border border-white/60 dark:border-gray-700"
+                    className="glass-panel rounded-2xl overflow-hidden group border border-white/60 dark:border-gray-700 flex flex-col"
                   >
-                    <div className="relative aspect-video bg-slate-100 dark:bg-gray-800">
-                      {item.platform === 'youtube' && getYouTubeID(item.url) ? (
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={`https://www.youtube.com/embed/${getYouTubeID(item.url)}`}
-                          title={item.title}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="absolute inset-0"
-                        ></iframe>
-                      ) : (
-                        <>
-                          <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-4 py-2 bg-white text-slate-900 rounded-lg font-bold flex items-center space-x-2 hover:bg-purple-50"
-                            >
-                              <SafeIcon icon={FiExternalLink} className="w-4 h-4" />
-                              <span>View on {item.platform}</span>
-                            </a>
-                          </div>
-                        </>
-                      )}
-                      {/* Platform Badge */}
-                      <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-lg text-xs font-bold text-white capitalize flex items-center space-x-1">
-                        <SafeIcon icon={item.platform === 'youtube' ? FiVideo : FiImage} className="w-3 h-3" />
-                        <span>{item.platform}</span>
-                      </div>
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDeletePost(item.id)}
-                        className="absolute top-3 right-3 p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <SafeIcon icon={FiTrash2} className="w-4 h-4" />
-                      </button>
+                    <div className="flex-grow">
+                      <SocialEmbed 
+                        url={item.url} 
+                        html={item.embedHtml} 
+                        type={item.platform} 
+                        title={item.title} 
+                        thumbnail={item.thumbnail} 
+                      />
                     </div>
-                    <div className="p-4">
-                      <h4 className="font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">{item.title}</h4>
-                      <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                        <span>{item.platform === 'youtube' ? `${item.views} views` : `${item.likes} likes`}</span>
-                        <span className="text-xs bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded">
-                          Added recently
-                        </span>
+                    <div className="p-4 bg-white/50 dark:bg-gray-800/50">
+                      <div className="flex items-start justify-between">
+                         <div className="flex-1 mr-2">
+                            <h4 className="font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">{item.title}</h4>
+                            <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                              <span>{item.platform === 'youtube' ? `${item.views} views` : `${item.likes} likes`}</span>
+                              <span className="text-xs bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                Added recently
+                              </span>
+                            </div>
+                         </div>
+                         <button
+                           onClick={() => handleDeletePost(item.id)}
+                           className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                           title="Delete Post"
+                         >
+                           <SafeIcon icon={FiTrash2} className="w-4 h-4" />
+                         </button>
                       </div>
                     </div>
                   </motion.div>
