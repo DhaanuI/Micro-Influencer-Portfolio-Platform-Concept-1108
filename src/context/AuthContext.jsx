@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { clearAuthData } from '../utils/apiHelpers';
 
 const AuthContext = createContext();
 
@@ -21,6 +22,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear auth token and user data from localStorage
+    clearAuthData();
+    // Clear user state
     setUser(null);
   };
 

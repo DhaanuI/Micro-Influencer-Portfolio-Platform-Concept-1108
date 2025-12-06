@@ -6,17 +6,22 @@ import SafeIcon from '../common/SafeIcon';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
-const { FiSun, FiMoon, FiSettings, FiHome, FiGrid } = FiIcons;
+const { FiSun, FiMoon, FiSettings, FiHome, FiGrid, FiLogOut } = FiIcons;
 
 const Navbar = () => {
   const { isDark, toggleTheme } = useTheme();
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleDashboard = () => {
     if (user) {
       navigate(user.type === 'influencer' ? '/dashboard/influencer' : '/dashboard/startup');
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -71,6 +76,17 @@ const Navbar = () => {
                 >
                   <SafeIcon icon={FiSettings} className="w-4 h-4" />
                   <span className="hidden sm:inline font-medium">Dashboard</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-md hover:shadow-lg hover:shadow-red-500/25 transition-all"
+                  title="Logout"
+                >
+                  <SafeIcon icon={FiLogOut} className="w-4 h-4" />
+                  <span className="hidden sm:inline font-medium">Logout</span>
                 </motion.button>
               </div>
             ) : (

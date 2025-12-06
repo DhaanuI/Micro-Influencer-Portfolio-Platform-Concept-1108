@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { saveAuthToken, saveUserData } from '../utils/apiHelpers';
 
 const { FiX, FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiInstagram, FiYoutube, FiGlobe, FiMapPin, FiBriefcase, FiLinkedin, FiTwitter, FiAlertCircle } = FiIcons;
 
@@ -11,6 +13,7 @@ const AuthModal = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
