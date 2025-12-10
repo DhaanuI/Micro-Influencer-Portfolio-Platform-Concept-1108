@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
-import { clearAuthData } from '../utils/apiHelpers';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { clearAuthData, getAuthToken } from '../utils/apiHelpers';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -15,6 +16,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [loading, setLoading] = useState(true);
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const token = getAuthToken();
+        if (token) {
+          // Validate token and get user data
+          const response = await api.auth.getMe();
+          if (response?.user) {
+            setUser(response.user);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user:', error);
+        // Clear invalid token
+        clearAuthData();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -46,7 +72,8 @@ export const AuthProvider = ({ children }) => {
       authMode,
       openAuthModal,
       closeAuthModal,
-      setAuthMode
+      setAuthMode,
+      loading
     }}>
       {children}
     </AuthContext.Provider>

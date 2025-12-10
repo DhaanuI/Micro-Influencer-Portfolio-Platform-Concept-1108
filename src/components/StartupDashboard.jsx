@@ -1,17 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import SocialEmbed from '../common/SocialEmbed';
 import { useAuth } from '../context/AuthContext';
+import { useInfluencer, useAdvertisement } from '../hooks/useAPI';
 
-const { FiSearch, FiFilter, FiUsers, FiTrendingUp, FiDollarSign, FiEye, FiHeart, FiStar, FiGrid, FiPlus, FiLink, FiVideo, FiImage, FiTrash2, FiExternalLink, FiSettings, FiLogOut, FiCode } = FiIcons;
+const { FiSearch, FiFilter, FiUsers, FiTrendingUp, FiDollarSign, FiEye, FiHeart, FiStar, FiGrid, FiPlus, FiLink, FiVideo, FiImage, FiTrash2, FiExternalLink, FiSettings, FiLogOut, FiCode, FiBriefcase, FiEdit, FiX } = FiIcons;
 
 const StartupDashboard = () => {
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('discover');
+  const { getAllInfluencers } = useInfluencer();
+  const {
+    getMyAdvertisements,
+    createAdvertisement,
+    updateAdvertisement,
+    deleteAdvertisement,
+    getAdvertisementApplications
+  } = useAdvertisement();
+
+  const [activeTab, setActiveTab] = useState('advertisements');
   const [showAddPost, setShowAddPost] = useState(false);
+  const [showCreateAd, setShowCreateAd] = useState(false);
+  const [editingAd, setEditingAd] = useState(null);
+  const [advertisements, setAdvertisements] = useState([]);
+  const [selectedAdApplications, setSelectedAdApplications] = useState(null);
+
+  const [filters, setFilters] = useState({
+    category: '',
+    minFollowers: '',
+    page: 1,
+    limit: 10
+  });
+
+  const [newAd, setNewAd] = useState({
+    title: '',
+    description: '',
+    category: 'other',
+    budget: '',
+    image: ''
+  });
+
+  // Load influencers and advertisements on mount
+  useEffect(() => {
+    getAllInfluencers.execute(filters);
+    loadAdvertisements();
+  }, [filters]);
+
+  const loadAdvertisements = async () => {
+    const result = await getMyAdvertisements.execute();
+    if (result?.data) {
+      setAdvertisements(result.data);
+    }
+  };
 
   // Mock Content Data
   const [portfolioItems, setPortfolioItems] = useState([
@@ -59,6 +101,72 @@ const StartupDashboard = () => {
     setPortfolioItems(portfolioItems.filter(item => item.id !== id));
   };
 
+  const handleCreateAd = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await createAdvertisement.execute(newAd);
+      if (result?.success) {
+        await loadAdvertisements();
+        setNewAd({ title: '', description: '', category: 'other', budget: '', image: '' });
+        setShowCreateAd(false);
+        alert('Advertisement created successfully!');
+      }
+    } catch (error) {
+      alert(error.message || 'Failed to create advertisement');
+    }
+  };
+
+  const handleUpdateAd = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await updateAdvertisement.execute(editingAd._id, newAd);
+      if (result?.success) {
+        await loadAdvertisements();
+        setEditingAd(null);
+        setNewAd({ title: '', description: '', category: 'other', budget: '', image: '' });
+        alert('Advertisement updated successfully!');
+      }
+    } catch (error) {
+      alert(error.message || 'Failed to update advertisement');
+    }
+  };
+
+  const handleDeleteAd = async (id) => {
+    if (confirm('Are you sure you want to delete this advertisement?')) {
+      try {
+        const result = await deleteAdvertisement.execute(id);
+        if (result?.success) {
+          await loadAdvertisements();
+          alert('Advertisement deleted successfully!');
+        }
+      } catch (error) {
+        alert(error.message || 'Failed to delete advertisement');
+      }
+    }
+  };
+
+  const handleViewApplications = async (ad) => {
+    try {
+      const result = await getAdvertisementApplications.execute(ad._id);
+      if (result?.data) {
+        setSelectedAdApplications({ ad, applications: result.data });
+      }
+    } catch (error) {
+      alert(error.message || 'Failed to load applications');
+    }
+  };
+
+  const startEditAd = (ad) => {
+    setEditingAd(ad);
+    setNewAd({
+      title: ad.title,
+      description: ad.description,
+      category: ad.category,
+      budget: ad.budget,
+      image: ad.image || ''
+    });
+  };
+
   const savedInfluencers = [
     { id: 1, name: 'Sarah Johnson', category: 'lifestyle', followers: 45000, engagement: 4.2, image: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=400&h=400&fit=crop&crop=face', priceRange: '$500-1000', lastContact: '2024-01-15' },
     { id: 2, name: 'Alex Chen', category: 'tech', followers: 32000, engagement: 5.1, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face', priceRange: '$300-700', lastContact: '2024-01-18' }
@@ -86,11 +194,8 @@ const StartupDashboard = () => {
   };
 
   const tabs = [
-    { id: 'discover', label: 'Discover', icon: FiSearch },
-    { id: 'saved', label: 'Saved', icon: FiHeart },
-    { id: 'campaigns', label: 'Campaigns', icon: FiStar },
+    { id: 'advertisements', label: 'Advertisements', icon: FiBriefcase },
     { id: 'content', label: 'Brand Content', icon: FiGrid },
-    { id: 'analytics', label: 'Analytics', icon: FiTrendingUp },
     { id: 'settings', label: 'Settings', icon: FiSettings }
   ];
 
@@ -100,37 +205,11 @@ const StartupDashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 drop-shadow-sm">
-            Brand Dashboard
+            Startup Dashboard
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-200">
-            Discover influencers, manage campaigns, and track performance
+            Manage your advertisements and brand content
           </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="glass-panel rounded-2xl p-6 border border-white/60 dark:border-gray-700"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${stat.color}-100 dark:bg-gray-800`}>
-                  <SafeIcon icon={stat.icon} className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-300`} />
-                </div>
-                <span className="text-green-600 dark:text-green-400 text-sm font-bold bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg">{stat.change}</span>
-              </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
-                {stat.value}
-              </div>
-              <div className="text-slate-600 dark:text-slate-300 font-medium">
-                {stat.label}
-              </div>
-            </motion.div>
-          ))}
         </div>
 
         {/* Tab Navigation */}
@@ -158,129 +237,292 @@ const StartupDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeTab === 'discover' && (
-            <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Discover Influencers</h3>
-                  <p className="text-slate-600 dark:text-slate-300 mt-1">
-                    Find the perfect match for your brand
-                  </p>
-                </div>
-                <Link to="/discover">
+          {activeTab === 'advertisements' && (
+            <div className="space-y-6">
+              <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Active Campaigns</h3>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold shadow-lg shadow-purple-500/20"
+                    onClick={() => setShowCreateAd(true)}
+                    className="px-5 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-bold shadow-md flex items-center space-x-2"
                   >
-                    Browse Full Directory
+                    <SafeIcon icon={FiPlus} className="w-5 h-5" />
+                    <span>Create Advertisement</span>
                   </motion.button>
-                </Link>
-              </div>
-
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <SafeIcon icon={FiSearch} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-300 w-5 h-5" />
-                  <input type="text" placeholder="Search by name, category, or keywords..." className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-slate-900 dark:text-white placeholder-slate-400 shadow-sm" />
                 </div>
-                <div className="flex items-center space-x-2 relative">
-                  <SafeIcon icon={FiFilter} className="absolute left-4 z-10 text-slate-400 dark:text-slate-300 w-5 h-5" />
-                  <select className="pl-12 pr-10 py-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-slate-900 dark:text-white shadow-sm appearance-none min-w-[200px] cursor-pointer">
-                    <option>All Categories</option>
-                    <option>Lifestyle</option>
-                    <option>Tech</option>
-                    <option>Fashion</option>
-                    <option>Food</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {activeTab === 'saved' && (
-            <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Saved Influencers</h3>
-              <div className="grid gap-4">
-                {savedInfluencers.map(influencer => (
-                  <div key={influencer.id} className="bg-white/50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center space-x-4 w-full md:w-auto">
-                      <img src={influencer.image} alt={influencer.name} className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-600" />
-                      <div>
-                        <h4 className="text-lg font-bold text-slate-900 dark:text-white">{influencer.name}</h4>
-                        <p className="text-sm font-medium text-purple-600 dark:text-purple-300 capitalize mb-1">{influencer.category}</p>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-                          <span className="bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded">{influencer.followers.toLocaleString()} followers</span>
-                          <span className="bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded">{influencer.engagement}% engagement</span>
-                          <span className="bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded">{influencer.priceRange}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 w-full md:w-auto">
-                      <Link to={`/influencer/${influencer.id}`} className="flex-1 md:flex-none">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-full px-5 py-2.5 bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-700 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition-colors font-medium"
-                        >
-                          View Profile
-                        </motion.button>
-                      </Link>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex-1 md:flex-none px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md"
-                      >
-                        Contact
-                      </motion.button>
-                    </div>
+                {getMyAdvertisements.loading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <SafeIcon icon={FiBriefcase} className="w-8 h-8 text-purple-600 animate-spin" />
+                    <span className="ml-3 text-lg text-slate-600 dark:text-slate-300">Loading...</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'campaigns' && (
-            <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Campaign Management</h3>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-bold shadow-md"
-                >
-                  + New Campaign
-                </motion.button>
-              </div>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
-                <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-gray-800">
-                    <tr>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase tracking-wider">Campaign</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase tracking-wider">Influencers</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase tracking-wider">Budget</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase tracking-wider">Status</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase tracking-wider">Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-gray-700 bg-white dark:bg-slate-900/50">
-                    {campaigns.map(campaign => (
-                      <tr key={campaign.id} className="hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="px-6 py-4 text-slate-900 dark:text-white font-semibold">{campaign.name}</td>
-                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{campaign.influencers} influencers</td>
-                        <td className="px-6 py-4 text-slate-900 dark:text-white font-bold">{campaign.budget}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${getStatusColor(campaign.status)}`}>
-                            {campaign.status}
+                ) : advertisements.filter(ad => ad.status === 'active').length === 0 ? (
+                  <div className="text-center py-12">
+                    <SafeIcon icon={FiBriefcase} className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                    <p className="text-slate-600 dark:text-slate-400 text-lg">
+                      No active campaigns yet. Create one to get started!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {advertisements.filter(ad => ad.status === 'active').map(ad => (
+                      <motion.div
+                        key={ad._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-slate-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                            ad.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                          }`}>
+                            {ad.status}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-sm">
-                          {campaign.startDate} - {campaign.endDate}
-                        </td>
-                      </tr>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => startEditAd(ad)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                            >
+                              <SafeIcon icon={FiEdit} className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAd(ad._id)}
+                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            >
+                              <SafeIcon icon={FiTrash2} className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{ad.title}</h4>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-3">{ad.description}</p>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-500 dark:text-slate-400 capitalize">{ad.category}</span>
+                          <span className="font-bold text-purple-600 dark:text-purple-400">{ad.budget || 'N/A'}</span>
+                        </div>
+                        <button
+                          onClick={() => handleViewApplications(ad)}
+                          className="mt-4 w-full py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/40 transition-colors font-semibold"
+                        >
+                          View Applications ({ad.totalApplications || 0})
+                        </button>
+                      </motion.div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                )}
               </div>
+
+              {/* Create/Edit Advertisement Modal */}
+              <AnimatePresence>
+                {(showCreateAd || editingAd) && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => {
+                      setShowCreateAd(false);
+                      setEditingAd(null);
+                      setNewAd({ title: '', description: '', category: 'other', budget: '', image: '' });
+                    }}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.9, y: 20 }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                    >
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                          {editingAd ? 'Edit Advertisement' : 'Create Advertisement'}
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setShowCreateAd(false);
+                            setEditingAd(null);
+                            setNewAd({ title: '', description: '', category: 'other', budget: '', image: '' });
+                          }}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          <SafeIcon icon={FiX} className="w-6 h-6" />
+                        </button>
+                      </div>
+                      <form onSubmit={editingAd ? handleUpdateAd : handleCreateAd} className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Title *
+                          </label>
+                          <input
+                            type="text"
+                            value={newAd.title}
+                            onChange={(e) => setNewAd({ ...newAd, title: e.target.value })}
+                            required
+                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="e.g., Instagram Collaboration Opportunity"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Description *
+                          </label>
+                          <textarea
+                            value={newAd.description}
+                            onChange={(e) => setNewAd({ ...newAd, description: e.target.value })}
+                            required
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Describe the opportunity..."
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                              Category
+                            </label>
+                            <select
+                              value={newAd.category}
+                              onChange={(e) => setNewAd({ ...newAd, category: e.target.value })}
+                              className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                              <option value="fashion">Fashion</option>
+                              <option value="fitness">Fitness</option>
+                              <option value="food">Food</option>
+                              <option value="travel">Travel</option>
+                              <option value="tech">Tech</option>
+                              <option value="lifestyle">Lifestyle</option>
+                              <option value="beauty">Beauty</option>
+                              <option value="gaming">Gaming</option>
+                              <option value="b2b">B2B</option>
+                              <option value="business">Business</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                              Budget
+                            </label>
+                            <input
+                              type="text"
+                              value={newAd.budget}
+                              onChange={(e) => setNewAd({ ...newAd, budget: e.target.value })}
+                              className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="e.g., $500-1000"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Image URL (optional)
+                          </label>
+                          <input
+                            type="url"
+                            value={newAd.image}
+                            onChange={(e) => setNewAd({ ...newAd, image: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="https://example.com/image.jpg"
+                          />
+                        </div>
+                        <div className="flex space-x-4 pt-4">
+                          <button
+                            type="submit"
+                            disabled={createAdvertisement.loading || updateAdvertisement.loading}
+                            className="flex-1 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-bold disabled:opacity-50"
+                          >
+                            {editingAd ? 'Update' : 'Create'} Advertisement
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowCreateAd(false);
+                              setEditingAd(null);
+                              setNewAd({ title: '', description: '', category: 'other', budget: '', image: '' });
+                            }}
+                            className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-slate-900 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-bold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Applications Modal */}
+              <AnimatePresence>
+                {selectedAdApplications && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => setSelectedAdApplications(null)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.9, y: 20 }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                    >
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                          Applications for "{selectedAdApplications.ad.title}"
+                        </h3>
+                        <button
+                          onClick={() => setSelectedAdApplications(null)}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          <SafeIcon icon={FiX} className="w-6 h-6" />
+                        </button>
+                      </div>
+                      {selectedAdApplications.applications.length === 0 ? (
+                        <div className="text-center py-12">
+                          <p className="text-slate-600 dark:text-slate-400">No applications yet</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {selectedAdApplications.applications.map(app => (
+                            <div
+                              key={app._id}
+                              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 border border-slate-200 dark:border-gray-600"
+                            >
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                                    {app.userId?.name || 'Unknown'}
+                                  </h4>
+                                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                                    {app.userId?.email}
+                                  </p>
+                                  <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                                    <span>Applied: {new Date(app.createdAt).toLocaleDateString()}</span>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                                      app.status === 'accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' :
+                                      app.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' :
+                                      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
+                                    }`}>
+                                      {app.status}
+                                    </span>
+                                  </div>
+                                </div>
+                                <Link
+                                  to={`/influencer/${app.influencerId?._id}`}
+                                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold text-sm"
+                                >
+                                  View Profile
+                                </Link>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
@@ -410,28 +652,6 @@ const StartupDashboard = () => {
                     </div>
                   </motion.div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Campaign Performance</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-6 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-800">
-                    <div className="text-4xl font-extrabold text-purple-600 dark:text-purple-300 mb-2">1.2M</div>
-                    <div className="text-purple-900 dark:text-purple-100 font-medium">Total Impressions</div>
-                  </div>
-                  <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800">
-                    <div className="text-4xl font-extrabold text-green-600 dark:text-green-300 mb-2">4.8%</div>
-                    <div className="text-green-900 dark:text-green-100 font-medium">Avg Engagement</div>
-                  </div>
-                  <div className="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800">
-                    <div className="text-4xl font-extrabold text-blue-600 dark:text-blue-300 mb-2">$2.30</div>
-                    <div className="text-blue-900 dark:text-blue-100 font-medium">Cost per Engagement</div>
-                  </div>
-                </div>
               </div>
             </div>
           )}

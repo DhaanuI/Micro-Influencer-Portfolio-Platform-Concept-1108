@@ -31,3 +31,8 @@ body {
   width: 100% !important;
   margin: 0 !important;
 }
+
+/* Instagram embed container - normal display */
+.social-embed-container {
+  position: relative;
+}

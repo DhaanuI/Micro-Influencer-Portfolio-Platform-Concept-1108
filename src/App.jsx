@@ -4,13 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
-import TopPerformers from './components/TopPerformers';
+import FAQ from './components/FAQ';
+import Footer from './components/Footer';
 import InfluencerGrid from './components/InfluencerGrid';
 import InfluencerProfile from './components/InfluencerProfile';
 import InfluencerDashboard from './components/InfluencerDashboard';
 import StartupDashboard from './components/StartupDashboard';
 import InfluencerFeed from './components/InfluencerFeed';
 import StartupFeed from './components/StartupFeed';
+import Pricing from './components/Pricing';
 import AuthModal from './components/AuthModal';
 import StarBackground from './common/StarBackground';
 import { ThemeProvider } from './context/ThemeContext';
@@ -27,34 +29,35 @@ function AppContent() {
         <Navbar />
         <AnimatePresence mode="wait">
           <Routes>
-            <Route 
-              path="/" 
+            <Route
+              path="/"
               element={
                 user ? (
-                  user.type === 'influencer' ? <Navigate to="/feed" /> : <Navigate to="/feed" />
+                  user.userType === 'influencer' ? <Navigate to="/feed" /> : <Navigate to="/feed" />
                 ) : (
                   <LandingPage />
                 )
-              } 
+              }
             />
-            <Route 
-              path="/feed" 
+            <Route
+              path="/feed"
               element={
                 user ? (
-                  user.type === 'influencer' ? <InfluencerFeed /> : <StartupFeed />
+                  user.userType === 'influencer' ? <InfluencerFeed /> : <StartupFeed />
                 ) : (
                   <Navigate to="/" />
                 )
-              } 
+              }
             />
-            <Route 
-              path="/discover" 
+            <Route
+              path="/discover"
               element={
                 <div className="pt-20">
                   <InfluencerGrid />
                 </div>
-              } 
+              }
             />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/influencer/:id" element={<InfluencerProfile />} />
             <Route path="/dashboard/influencer" element={<InfluencerDashboard />} />
             <Route path="/dashboard/startup" element={<StartupDashboard />} />
@@ -76,7 +79,8 @@ function LandingPage() {
     >
       <Hero />
       <Features />
-      <TopPerformers />
+      <FAQ />
+      <Footer />
     </motion.div>
   );
 }

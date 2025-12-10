@@ -1,5 +1,6 @@
 // API Base URL - Update this to match your backend server
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// const API_BASE_URL = "https://influencers-tau.vercel.app/api"
+const API_BASE_URL = "https://influencers-1-cyin.onrender.com/api"
 
 // Helper function to get auth token from localStorage
 const getAuthToken = () => {
@@ -64,81 +65,146 @@ export const authAPI = {
 // ==================== INFLUENCER APIs ====================
 
 export const influencerAPI = {
-  // Create or update influencer profile
-  createOrUpdateProfile: async (profileData) => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/profile`, {
-      method: 'POST',
+  // Update influencer profile (bio, followers, category, etc.)
+  updateProfile: async (profileData) => {
+    const response = await authFetch(`${API_BASE_URL}/users/profile`, {
+      method: 'PUT',
       body: JSON.stringify(profileData),
     });
     return handleResponse(response);
   },
 
-  // Update embed links (Instagram or LinkedIn)
-  updateEmbedLinks: async (embedData) => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/embed-links`, {
-      method: 'PUT',
+  // Add embed link (Instagram or LinkedIn)
+  addEmbed: async (embedData) => {
+    const response = await authFetch(`${API_BASE_URL}/users/embeds`, {
+      method: 'POST',
       body: JSON.stringify(embedData),
     });
     return handleResponse(response);
   },
 
-  // Get own influencer profile
-  getMyProfile: async () => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/me/profile`);
-    return handleResponse(response);
-  },
-
-  // Get list of startups interested in influencer's profile
-  getProfileInterests: async () => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/me/interests`);
-    return handleResponse(response);
-  },
-
-  // Browse all influencers with filters and pagination
+  // Get all influencers with their embeds (for startups to browse)
   getAllInfluencers: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const url = `${API_BASE_URL}/influencers${queryString ? `?${queryString}` : ''}`;
-    const response = await authFetch(url);
-    return handleResponse(response);
-  },
-
-  // Get influencer by ID (basic info)
-  getInfluencerById: async (id) => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/${id}`);
-    return handleResponse(response);
-  },
-
-  // Get influencer's embed posts only
-  getInfluencerEmbeds: async (id, platform = null) => {
-    const url = platform 
-      ? `${API_BASE_URL}/influencers/${id}/embeds?platform=${platform}`
-      : `${API_BASE_URL}/influencers/${id}/embeds`;
+    const url = `${API_BASE_URL}/users/influencers${queryString ? `?${queryString}` : ''}`;
     const response = await authFetch(url);
     return handleResponse(response);
   },
 };
 
-// ==================== STARTUP APIs ====================
 
-export const startupAPI = {
-  // View influencer profile (uses 1 view from quota)
-  viewInfluencerProfile: async (id) => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/view/${id}`);
-    return handleResponse(response);
-  },
 
-  // Mark interest in an influencer
-  markInterest: async (influencerId, note = '') => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/interest/${influencerId}`, {
+// ==================== ADVERTISEMENT APIs ====================
+
+export const advertisementAPI = {
+  // Create new advertisement (Startup only)
+  createAdvertisement: async (adData) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements`, {
       method: 'POST',
-      body: JSON.stringify({ note }),
+      body: JSON.stringify(adData),
     });
     return handleResponse(response);
   },
 
-  // Get list of influencers the startup has marked interest in
-  getMyInterests: async () => {
-    const response = await authFetch(`${API_BASE_URL}/influencers/my/interests`);
+  // Get all advertisements with filters and pagination
+  getAllAdvertisements: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/advertisements${queryString ? `?${queryString}` : ''}`;
+    const response = await authFetch(url);
+    return handleResponse(response);
+  },
+
+  // Get single advertisement by ID
+  getAdvertisementById: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/${id}`);
+    return handleResponse(response);
+  },
+
+  // Get my advertisements (Startup only)
+  getMyAdvertisements: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/advertisements/my/posts${queryString ? `?${queryString}` : ''}`;
+    const response = await authFetch(url);
+    return handleResponse(response);
+  },
+
+  // Update advertisement (Startup only)
+  updateAdvertisement: async (id, adData) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(adData),
+    });
+    return handleResponse(response);
+  },
+
+  // Delete advertisement (Startup only)
+  deleteAdvertisement: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/${id}`, {
+      method: 'DELETE',
+    });
+    return handleResponse(response);
+  },
+
+  // Apply to advertisement (Influencer only)
+  applyToAdvertisement: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/${id}/apply`, {
+      method: 'POST',
+    });
+    return handleResponse(response);
+  },
+
+  // Get applications for an advertisement (Startup only)
+  getAdvertisementApplications: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/${id}/applications`);
+    return handleResponse(response);
+  },
+
+  // Get my applications (Influencer only)
+  getMyApplications: async () => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/my/applications`);
+    return handleResponse(response);
+  },
+
+  // Update application status (Startup only)
+  updateApplicationStatus: async (applicationId, status) => {
+    const response = await authFetch(`${API_BASE_URL}/advertisements/applications/${applicationId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+    return handleResponse(response);
+  },
+};
+
+// ==================== SUBSCRIPTION APIs ====================
+
+export const subscriptionAPI = {
+  // Get current subscription info
+  getSubscription: async () => {
+    const response = await authFetch(`${API_BASE_URL}/subscription`);
+    return handleResponse(response);
+  },
+
+  // Upgrade to premium
+  upgradeToPremium: async () => {
+    const response = await authFetch(`${API_BASE_URL}/subscription/upgrade`, {
+      method: 'POST',
+    });
+    return handleResponse(response);
+  },
+
+  // Downgrade to free
+  downgradeToFree: async () => {
+    const response = await authFetch(`${API_BASE_URL}/subscription/downgrade`, {
+      method: 'POST',
+    });
+    return handleResponse(response);
+  },
+
+  // Activate promoter boost (influencers only)
+  activateBoost: async () => {
+    const response = await authFetch(`${API_BASE_URL}/subscription/boost`, {
+      method: 'POST',
+    });
     return handleResponse(response);
   },
 };
@@ -147,6 +213,7 @@ export const startupAPI = {
 export default {
   auth: authAPI,
   influencer: influencerAPI,
-  startup: startupAPI,
+  advertisement: advertisementAPI,
+  subscription: subscriptionAPI,
 };
 

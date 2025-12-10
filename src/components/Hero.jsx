@@ -48,7 +48,7 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-xl md:text-2xl text-slate-700 dark:text-slate-200 mb-12 max-w-3xl mx-auto leading-relaxed font-medium"
         >
-          Discover vetted micro-influencers, view portfolios, and launch campaigns in minutes. Automated management tailored for growth.
+          This platform acts as a bridge between small-scale startups and micro-influencers. Discover vetted creators, view portfolios, and launch campaigns in minutes.
         </motion.p>
 
         <motion.div

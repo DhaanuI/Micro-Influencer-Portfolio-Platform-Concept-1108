@@ -54,37 +54,43 @@ export const useAuth = () => {
  * Hook for influencer operations
  */
 export const useInfluencer = () => {
-  const createOrUpdateProfile = useAPI(api.influencer.createOrUpdateProfile);
-  const updateEmbedLinks = useAPI(api.influencer.updateEmbedLinks);
-  const getMyProfile = useAPI(api.influencer.getMyProfile);
-  const getProfileInterests = useAPI(api.influencer.getProfileInterests);
+  const updateProfile = useAPI(api.influencer.updateProfile);
+  const addEmbed = useAPI(api.influencer.addEmbed);
   const getAllInfluencers = useAPI(api.influencer.getAllInfluencers);
-  const getInfluencerById = useAPI(api.influencer.getInfluencerById);
-  const getInfluencerEmbeds = useAPI(api.influencer.getInfluencerEmbeds);
 
   return {
-    createOrUpdateProfile,
-    updateEmbedLinks,
-    getMyProfile,
-    getProfileInterests,
+    updateProfile,
+    addEmbed,
     getAllInfluencers,
-    getInfluencerById,
-    getInfluencerEmbeds,
   };
 };
 
 /**
- * Hook for startup operations
+ * Hook for advertisement operations
  */
-export const useStartup = () => {
-  const viewInfluencerProfile = useAPI(api.startup.viewInfluencerProfile);
-  const markInterest = useAPI(api.startup.markInterest);
-  const getMyInterests = useAPI(api.startup.getMyInterests);
+export const useAdvertisement = () => {
+  const createAdvertisement = useAPI(api.advertisement.createAdvertisement);
+  const getAllAdvertisements = useAPI(api.advertisement.getAllAdvertisements);
+  const getAdvertisementById = useAPI(api.advertisement.getAdvertisementById);
+  const getMyAdvertisements = useAPI(api.advertisement.getMyAdvertisements);
+  const updateAdvertisement = useAPI(api.advertisement.updateAdvertisement);
+  const deleteAdvertisement = useAPI(api.advertisement.deleteAdvertisement);
+  const applyToAdvertisement = useAPI(api.advertisement.applyToAdvertisement);
+  const getAdvertisementApplications = useAPI(api.advertisement.getAdvertisementApplications);
+  const getMyApplications = useAPI(api.advertisement.getMyApplications);
+  const updateApplicationStatus = useAPI(api.advertisement.updateApplicationStatus);
 
   return {
-    viewInfluencerProfile,
-    markInterest,
-    getMyInterests,
+    createAdvertisement,
+    getAllAdvertisements,
+    getAdvertisementById,
+    getMyAdvertisements,
+    updateAdvertisement,
+    deleteAdvertisement,
+    applyToAdvertisement,
+    getAdvertisementApplications,
+    getMyApplications,
+    updateApplicationStatus,
   };
 };
 
@@ -92,6 +98,6 @@ export default {
   useAPI,
   useAuth,
   useInfluencer,
-  useStartup,
+  useAdvertisement,
 };
 

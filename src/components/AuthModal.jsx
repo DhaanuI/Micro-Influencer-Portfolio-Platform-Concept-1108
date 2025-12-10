@@ -26,6 +26,7 @@ const AuthModal = () => {
     youtube: '',
     tiktok: '',
     // Startup Specific
+    companyName: '',
     website: '',
     location: '',
     companySize: '',
@@ -39,32 +40,66 @@ const AuthModal = () => {
     setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
   }, [authMode]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (authMode === 'signup') {
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match");
-        return;
+    try {
+      if (authMode === 'signup') {
+        // Validation
+        if (formData.password !== formData.confirmPassword) {
+          setError("Passwords do not match");
+          setLoading(false);
+          return;
+        }
+        if (formData.password.length < 6) {
+          setError("Password must be at least 6 characters");
+          setLoading(false);
+          return;
+        }
+
+        // Prepare signup data
+        const signupData = {
+          email: formData.email,
+          password: formData.password,
+          userType: formData.userType,
+          name: formData.name || 'User'
+        };
+
+        // Add company name for startups
+        if (formData.userType === 'startup' && formData.companyName) {
+          signupData.companyName = formData.companyName;
+        }
+
+        // Call signup API
+        const result = await api.auth.signup(signupData);
+
+        // Save token and user data
+        saveAuthToken(result.token);
+        saveUserData(result.user);
+
+        // Update auth context
+        login(result.user);
+
+      } else {
+        // Login
+        const result = await api.auth.login({
+          email: formData.email,
+          password: formData.password
+        });
+
+        // Save token and user data
+        saveAuthToken(result.token);
+        saveUserData(result.user);
+
+        // Update auth context
+        login(result.user);
       }
-      if (formData.password.length < 6) {
-        setError("Password must be at least 6 characters");
-        return;
-      }
+    } catch (err) {
+      setError(err.message || 'An error occurred. Please try again.');
+      setLoading(false);
     }
-
-    const userData = {
-      id: 1,
-      name: formData.name || 'User',
-      email: formData.email,
-      type: formData.userType,
-      details: formData.userType === 'influencer' 
-        ? { instagram: formData.instagram, youtube: formData.youtube, linkedin: formData.linkedin, twitter: formData.twitter }
-        : { website: formData.website, location: formData.location, linkedin: formData.linkedin, twitter: formData.twitter }
-    };
-
-    login(userData);
   };
 
   const handleInputChange = (e) => {
@@ -187,7 +222,7 @@ const AuthModal = () => {
 
               {authMode === 'signup' && formData.userType === 'influencer' && (
                 <div className="space-y-4 pt-2">
-                   <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Verification Details</p>
+                   <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Social Media (Optional - can be added later)</p>
                    <div className="relative">
                     <SafeIcon icon={FiInstagram} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-pink-500 w-5 h-5" />
                     <input
@@ -196,8 +231,7 @@ const AuthModal = () => {
                       value={formData.instagram}
                       onChange={handleInputChange}
                       className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none placeholder-slate-400"
-                      placeholder="Instagram Handle (e.g. @username)"
-                      required
+                      placeholder="Instagram Handle (e.g. @username) - Optional"
                     />
                   </div>
                   <div className="relative">
@@ -208,7 +242,7 @@ const AuthModal = () => {
                       value={formData.youtube}
                       onChange={handleInputChange}
                       className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none placeholder-slate-400"
-                      placeholder="YouTube Channel URL"
+                      placeholder="YouTube Channel URL - Optional"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -220,7 +254,7 @@ const AuthModal = () => {
                         value={formData.linkedin}
                         onChange={handleInputChange}
                         className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none placeholder-slate-400"
-                        placeholder="LinkedIn URL"
+                        placeholder="LinkedIn URL - Optional"
                       />
                     </div>
                     <div className="relative">
@@ -240,7 +274,18 @@ const AuthModal = () => {
 
               {authMode === 'signup' && formData.userType === 'startup' && (
                 <div className="space-y-4 pt-2">
-                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Company Details</p>
+                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Company Details (Optional - can be added later)</p>
+                  <div className="relative">
+                    <SafeIcon icon={FiBriefcase} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      name="companyName"
+                      value={formData.companyName}
+                      onChange={handleInputChange}
+                      className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none placeholder-slate-400"
+                      placeholder="Company Name - Optional"
+                    />
+                  </div>
                   <div className="relative">
                     <SafeIcon icon={FiGlobe} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
                     <input
@@ -249,8 +294,7 @@ const AuthModal = () => {
                       value={formData.website}
                       onChange={handleInputChange}
                       className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none placeholder-slate-400"
-                      placeholder="Company Website (https://...)"
-                      required
+                      placeholder="Company Website (https://...) - Optional"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -286,20 +330,18 @@ const AuthModal = () => {
                         value={formData.location}
                         onChange={handleInputChange}
                         className="glass-input w-full pl-9 pr-4 py-3 rounded-xl focus:outline-none placeholder-slate-400"
-                        placeholder="HQ Location"
-                        required
+                        placeholder="HQ Location - Optional"
                       />
                     </div>
                     <div className="relative">
                       <SafeIcon icon={FiBriefcase} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <select 
-                        name="companySize" 
-                        value={formData.companySize} 
+                      <select
+                        name="companySize"
+                        value={formData.companySize}
                         onChange={handleInputChange}
                         className="glass-input w-full pl-9 pr-4 py-3 rounded-xl focus:outline-none text-slate-900 dark:text-white"
-                        required
                       >
-                        <option value="" className="dark:bg-slate-800">Size</option>
+                        <option value="" className="dark:bg-slate-800">Company Size - Optional</option>
                         <option value="1-10" className="dark:bg-slate-800">1-10</option>
                         <option value="11-50" className="dark:bg-slate-800">11-50</option>
                         <option value="50+" className="dark:bg-slate-800">50+</option>
@@ -364,9 +406,10 @@ const AuthModal = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all font-semibold text-lg mt-4"
+                disabled={loading}
+                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all font-semibold text-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {authMode === 'login' ? 'Log In' : 'Create Account'}
+                {loading ? 'Please wait...' : (authMode === 'login' ? 'Log In' : 'Create Account')}
               </motion.button>
             </form>
 

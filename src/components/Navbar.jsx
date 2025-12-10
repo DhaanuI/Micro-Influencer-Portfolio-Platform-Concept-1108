@@ -3,19 +3,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-import { useTheme } from '../context/ThemeContext';
+import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
 
-const { FiSun, FiMoon, FiSettings, FiHome, FiGrid, FiLogOut } = FiIcons;
+const { FiSettings, FiHome, FiGrid, FiLogOut, FiDollarSign } = FiIcons;
 
 const Navbar = () => {
-  const { isDark, toggleTheme } = useTheme();
   const { user, openAuthModal, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleDashboard = () => {
     if (user) {
-      navigate(user.type === 'influencer' ? '/dashboard/influencer' : '/dashboard/startup');
+      navigate(user.userType === 'influencer' ? '/dashboard/influencer' : '/dashboard/startup');
     }
   };
 
@@ -34,9 +33,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex justify-between items-center h-full">
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-xl">IH</span>
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="shadow-lg shadow-indigo-500/30"
+            >
+              <Logo size={40} className="group-hover:drop-shadow-lg transition-all" />
+            </motion.div>
             <span className="text-xl font-bold text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
               Influence Hub
             </span>
@@ -44,27 +46,32 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             {user && (
-              <Link to="/feed">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors shadow-sm flex items-center space-x-2"
-                  title="Showcase"
-                >
-                  <SafeIcon icon={FiGrid} className="w-5 h-5" />
-                  <span className="hidden md:inline text-sm font-medium">Showcase</span>
-                </motion.button>
-              </Link>
-            )}
+              <>
+                <Link to="/feed">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors shadow-sm flex items-center space-x-2"
+                    title="Showcase"
+                  >
+                    <SafeIcon icon={FiGrid} className="w-5 h-5" />
+                    <span className="hidden md:inline text-sm font-medium">Showcase</span>
+                  </motion.button>
+                </Link>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={toggleTheme}
-              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors shadow-sm"
-            >
-              <SafeIcon icon={isDark ? FiSun : FiMoon} className="w-5 h-5" />
-            </motion.button>
+                <Link to="/pricing">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 border border-amber-400 text-white hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center space-x-2"
+                    title="Pricing"
+                  >
+                    <SafeIcon icon={FiDollarSign} className="w-5 h-5" />
+                    <span className="hidden md:inline text-sm font-medium">Pricing</span>
+                  </motion.button>
+                </Link>
+              </>
+            )}
 
             {user ? (
               <div className="flex items-center space-x-3">

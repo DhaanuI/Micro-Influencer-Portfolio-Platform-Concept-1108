@@ -4,15 +4,39 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import SocialEmbed from '../common/SocialEmbed';
 import { useAuth } from '../context/AuthContext';
+import { useInfluencer, useAdvertisement } from '../hooks/useAPI';
+import api from '../services/api';
 
-const { FiTrendingUp, FiUsers, FiDollarSign, FiEye, FiHeart, FiMessageCircle, FiSettings, FiZap, FiStar, FiGrid, FiPlus, FiLink, FiVideo, FiImage, FiTrash2, FiExternalLink, FiLogOut, FiCode, FiActivity, FiClock } = FiIcons;
+const { FiTrendingUp, FiUsers, FiDollarSign, FiEye, FiHeart, FiMessageCircle, FiSettings, FiZap, FiStar, FiGrid, FiPlus, FiLink, FiVideo, FiImage, FiTrash2, FiExternalLink, FiLogOut, FiCode, FiActivity, FiClock, FiBriefcase } = FiIcons;
 
 const InfluencerDashboard = () => {
-  const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { user, logout } = useAuth();
+  const { updateProfile, addEmbed } = useInfluencer();
+  const { getMyApplications } = useAdvertisement();
+  const [activeTab, setActiveTab] = useState('applications');
   const [showAddPost, setShowAddPost] = useState(false);
   const [boostActive, setBoostActive] = useState(false);
   const [boostTimeLeft, setBoostTimeLeft] = useState(0); // in seconds
+  const [applications, setApplications] = useState([]);
+  const [profile, setProfile] = useState(null);
+
+  // Load profile data and applications on mount
+  useEffect(() => {
+    const loadData = async () => {
+      // Get profile from auth/me
+      const profileResult = await api.auth.getMe();
+      if (profileResult?.user) {
+        setProfile(profileResult.user);
+      }
+
+      // Load applications
+      const appsResult = await getMyApplications.execute();
+      if (appsResult?.data) {
+        setApplications(appsResult.data);
+      }
+    };
+    loadData();
+  }, []);
 
   // Handle Boost Timer
   useEffect(() => {
@@ -109,17 +133,17 @@ const InfluencerDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'text-green-700 bg-green-100 dark:bg-green-900/50 dark:text-green-200 border border-green-200 dark:border-green-800';
+      case 'completed':
+      case 'accepted': return 'text-green-700 bg-green-100 dark:bg-green-900/50 dark:text-green-200 border border-green-200 dark:border-green-800';
       case 'in_progress': return 'text-blue-700 bg-blue-100 dark:bg-blue-900/50 dark:text-blue-200 border border-blue-200 dark:border-blue-800';
       case 'pending': return 'text-yellow-700 bg-yellow-100 dark:bg-yellow-900/50 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800';
+      case 'rejected': return 'text-red-700 bg-red-100 dark:bg-red-900/50 dark:text-red-200 border border-red-200 dark:border-red-800';
       default: return 'text-slate-600 bg-slate-100 dark:bg-gray-800 dark:text-slate-300';
     }
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: FiTrendingUp },
-    { id: 'portfolio', label: 'Portfolio', icon: FiGrid },
-    { id: 'campaigns', label: 'Campaigns', icon: FiStar },
+    { id: 'applications', label: 'Applications', icon: FiBriefcase },
     { id: 'automation', label: 'Automation', icon: FiZap },
     { id: 'settings', label: 'Settings', icon: FiSettings }
   ];
@@ -162,300 +186,63 @@ const InfluencerDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              
-              {/* Boost Widget - NEW FEATURE */}
-              <motion.div 
-                whileHover={{ scale: 1.01 }}
-                className={`p-6 rounded-2xl border transition-all relative overflow-hidden ${
-                  boostActive 
-                    ? 'bg-gradient-to-r from-indigo-900 to-purple-900 border-indigo-500 shadow-lg shadow-indigo-500/30' 
-                    : 'glass-panel bg-white dark:bg-gray-800 border-white/60 dark:border-gray-700'
-                }`}
-              >
-                {/* Animated Background for Active State */}
-                {boostActive && (
-                  <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 blur-[100px] opacity-20 animate-pulse"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500 blur-[100px] opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-                  </div>
-                )}
-
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${boostActive ? 'bg-white/10 text-yellow-400' : 'bg-indigo-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400'}`}>
-                      <SafeIcon icon={FiActivity} className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <h3 className={`text-xl font-bold ${boostActive ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
-                        {boostActive ? 'Profile Boost Active! 🚀' : 'Boost Your Visibility'}
-                      </h3>
-                      <p className={`${boostActive ? 'text-indigo-200' : 'text-slate-600 dark:text-slate-300'}`}>
-                        {boostActive 
-                          ? 'Your profile is currently featured on the main feed.' 
-                          : 'Get 5x more views from startups for 48 hours.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 w-full md:w-auto">
-                    {boostActive ? (
-                      <div className="flex items-center gap-3 bg-black/30 px-6 py-3 rounded-xl border border-white/10 w-full md:w-auto justify-center">
-                        <SafeIcon icon={FiClock} className="w-5 h-5 text-yellow-400 animate-pulse" />
-                        <span className="text-2xl font-mono font-bold text-white tracking-widest">
-                          {formatTime(boostTimeLeft)}
-                        </span>
-                      </div>
-                    ) : (
-                      <button 
-                        onClick={handleActivateBoost}
-                        className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-1"
-                      >
-                        Activate Boost ($19.99)
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="glass-panel rounded-2xl p-6 border border-white/60 dark:border-gray-700"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${stat.color}-100 dark:bg-gray-800`}>
-                        <SafeIcon icon={stat.icon} className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-300`} />
-                      </div>
-                      <span className="text-green-600 dark:text-green-400 text-sm font-bold bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg">{stat.change}</span>
-                    </div>
-                    <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
-                      {stat.value}
-                    </div>
-                    <div className="text-slate-600 dark:text-slate-300 font-medium">
-                      {stat.label}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Recent Activity */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Recent Performance</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/50 rounded-xl">
-                      <div className="flex items-center space-x-3">
-                        <SafeIcon icon={FiHeart} className="w-5 h-5 text-red-500" />
-                        <span className="text-slate-700 dark:text-slate-200 font-medium">Likes</span>
-                      </div>
-                      <span className="font-bold text-slate-900 dark:text-white text-lg">2,340</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/50 rounded-xl">
-                      <div className="flex items-center space-x-3">
-                        <SafeIcon icon={FiMessageCircle} className="w-5 h-5 text-blue-500" />
-                        <span className="text-slate-700 dark:text-slate-200 font-medium">Comments</span>
-                      </div>
-                      <span className="font-bold text-slate-900 dark:text-white text-lg">186</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/50 rounded-xl">
-                      <div className="flex items-center space-x-3">
-                        <SafeIcon icon={FiEye} className="w-5 h-5 text-green-500" />
-                        <span className="text-slate-700 dark:text-slate-200 font-medium">Views</span>
-                      </div>
-                      <span className="font-bold text-slate-900 dark:text-white text-lg">15,420</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Quick Actions</h3>
-                  <div className="space-y-3">
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setActiveTab('portfolio')}
-                      className="w-full p-4 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-700 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors text-left font-bold"
-                    >
-                      Update Portfolio
-                    </motion.button>
-                     <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-left font-bold"
-                    >
-                      View Analytics
-                    </motion.button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'portfolio' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Content Portfolio</h2>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowAddPost(!showAddPost)}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-xl font-bold flex items-center space-x-2 shadow-lg shadow-purple-500/20"
-                >
-                  <SafeIcon icon={showAddPost ? FiTrash2 : FiPlus} className="w-4 h-4" />
-                  <span>{showAddPost ? 'Cancel' : 'Add Content'}</span>
-                </motion.button>
-              </div>
-
-              <AnimatePresence>
-                {showAddPost && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="glass-panel rounded-2xl p-6 border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Embed New Post</h3>
-                      <form onSubmit={handleAddPost} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Platform</label>
-                            <div className="relative">
-                              <SafeIcon icon={newPost.platform === 'youtube' ? FiVideo : FiImage} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                              <select 
-                                value={newPost.platform} 
-                                onChange={(e) => setNewPost({...newPost, platform: e.target.value})}
-                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none text-slate-900 dark:text-white appearance-none"
-                              >
-                                <option value="instagram">Instagram</option>
-                                <option value="youtube">YouTube</option>
-                                <option value="tiktok">TikTok</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Post Title</label>
-                            <input 
-                              type="text" 
-                              value={newPost.title}
-                              onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                              placeholder="e.g. Summer Vlog 2024"
-                              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none text-slate-900 dark:text-white"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Post URL / Embed Code</label>
-                          <div className="relative">
-                            <SafeIcon icon={FiCode} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                            <input 
-                              type="text" 
-                              value={newPost.url}
-                              onChange={(e) => setNewPost({...newPost, url: e.target.value})}
-                              placeholder="https://... or Paste Embed Code <blockquote...>"
-                              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none text-slate-900 dark:text-white font-mono text-sm"
-                              required
-                            />
-                          </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                            Paste the full URL or the Embed Code (HTML) for advanced integrations.
-                          </p>
-                        </div>
-                        <div className="flex justify-end">
-                          <button 
-                            type="submit" 
-                            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
-                          >
-                            Add to Portfolio
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {portfolioItems.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="glass-panel rounded-2xl overflow-hidden group border border-white/60 dark:border-gray-700 flex flex-col"
-                  >
-                    <div className="flex-grow">
-                      <SocialEmbed url={item.url} html={item.embedHtml} type={item.platform} title={item.title} thumbnail={item.thumbnail} />
-                    </div>
-                    <div className="p-4 bg-white/50 dark:bg-gray-800/50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 mr-2">
-                          <h4 className="font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">{item.title}</h4>
-                          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                            <span>{item.platform === 'youtube' ? `${item.views} views` : `${item.likes} likes`}</span>
-                            <span className="text-xs bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded">
-                              Added recently
-                            </span>
-                          </div>
-                        </div>
-                         <button 
-                          onClick={() => handleDeletePost(item.id)}
-                          className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                          title="Delete Post"
-                        >
-                          <SafeIcon icon={FiTrash2} className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'campaigns' && (
+          {activeTab === 'applications' && (
             <div className="glass-panel rounded-2xl p-8 border border-white/60 dark:border-gray-700">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Campaign History</h3>
-                <button className="text-purple-600 dark:text-purple-300 font-bold hover:underline">View All</button>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">My Applications</h3>
+                <span className="text-slate-600 dark:text-slate-400">{applications.length} total</span>
               </div>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
-                <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-gray-800">
-                    <tr>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Brand</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Type</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Amount</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Status</th>
-                      <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-gray-700 bg-white dark:bg-slate-900/50">
-                    {recentCampaigns.map(campaign => (
-                      <tr key={campaign.id} className="hover:bg-slate-50 dark:hover:bg-gray-800/50">
-                        <td className="px-6 py-4 text-slate-900 dark:text-white font-semibold">{campaign.brand}</td>
-                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{campaign.type}</td>
-                        <td className="px-6 py-4 text-slate-900 dark:text-white font-bold">{campaign.amount}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(campaign.status)}`}>
-                            {campaign.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{campaign.date}</td>
+
+              {getMyApplications.loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <SafeIcon icon={FiActivity} className="w-8 h-8 text-purple-600 animate-spin" />
+                  <span className="ml-3 text-lg text-slate-600 dark:text-slate-300">Loading applications...</span>
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="text-center py-12">
+                  <SafeIcon icon={FiBriefcase} className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-600 dark:text-slate-400 text-lg">
+                    No applications yet. Browse opportunities to get started!
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Opportunity</th>
+                        <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Company</th>
+                        <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Budget</th>
+                        <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Status</th>
+                        <th className="text-left px-6 py-4 text-slate-700 dark:text-slate-200 font-bold text-sm uppercase">Applied On</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-gray-700 bg-white dark:bg-slate-900/50">
+                      {applications.map(application => (
+                        <tr key={application._id} className="hover:bg-slate-50 dark:hover:bg-gray-800/50">
+                          <td className="px-6 py-4 text-slate-900 dark:text-white font-semibold">
+                            {application.advertisementId?.title || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            {application.advertisementId?.startupId?.companyName || application.advertisementId?.startupId?.name || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 text-slate-900 dark:text-white font-bold">
+                            {application.advertisementId?.budget || 'Not specified'}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(application.status)}`}>
+                              {application.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            {new Date(application.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

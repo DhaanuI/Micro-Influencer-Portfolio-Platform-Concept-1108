@@ -4,7 +4,7 @@ import SafeIcon from './SafeIcon';
 
 const { FiExternalLink, FiImage, FiVideo } = FiIcons;
 
-const SocialEmbed = ({ url, html, type, title, thumbnail }) => {
+const SocialEmbed = ({ url, html, type, title, thumbnail, hideUsername = false }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -19,12 +19,12 @@ const SocialEmbed = ({ url, html, type, title, thumbnail }) => {
     if (html) {
       // Attempt to process immediately
       processEmbeds();
-      
+
       // Retry checks to handle async script loading or dynamic content updates
       const timeout1 = setTimeout(processEmbeds, 500);
       const timeout2 = setTimeout(processEmbeds, 1500);
       const timeout3 = setTimeout(processEmbeds, 3000);
-      
+
       return () => {
         clearTimeout(timeout1);
         clearTimeout(timeout2);
@@ -65,16 +65,16 @@ const SocialEmbed = ({ url, html, type, title, thumbnail }) => {
   // 2. HTML Embed Player (Instagram, TikTok, custom iframes)
   if (html) {
     return (
-      <div 
-        ref={containerRef} 
+      <div
+        ref={containerRef}
         className="w-full flex justify-center bg-white dark:bg-gray-800 rounded-lg overflow-hidden"
       >
-        {/* Container for the embed code. 
-            Instagram scripts look for the 'instagram-media' class inside this div 
+        {/* Container for the embed code.
+            Instagram scripts look for the 'instagram-media' class inside this div
             and replace the blockquote with an interactive iframe. */}
-        <div 
+        <div
           className="w-full flex justify-center items-center social-embed-container"
-          dangerouslySetInnerHTML={{ __html: html }} 
+          dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
     );

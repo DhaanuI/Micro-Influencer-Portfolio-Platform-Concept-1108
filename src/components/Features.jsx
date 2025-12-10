@@ -3,39 +3,29 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 
-const { FiShield, FiZap, FiTarget, FiBarChart2, FiGlobe, FiSmartphone } = FiIcons;
+const { FiShield, FiZap, FiTarget, FiDollarSign } = FiIcons;
 
 const Features = () => {
   const features = [
     {
       icon: FiShield,
       title: "Verified SaaS Experts",
-      desc: "Connect with creators who understand B2B, dev tools, and software. Every influencer is vetted for tech literacy."
+      desc: "Connect with authentic micro-influencers who understand your product. Every creator is vetted for quality and genuine engagement."
     },
     {
       icon: FiZap,
       title: "Rapid Content Scaling",
-      desc: "Fill your content calendar with high-quality product demos, tutorials, and reviews without managing a production team."
+      desc: "Launch campaigns in minutes and get high-quality content fast. No lengthy negotiations or complex contracts needed."
+    },
+    {
+      icon: FiDollarSign,
+      title: "Affordable for Smaller Startups",
+      desc: "Budget-friendly pricing designed for small-scale startups. Work with micro-influencers who deliver authentic results without breaking the bank."
     },
     {
       icon: FiTarget,
       title: "Niche Targeting",
-      desc: "Find creators with specific audiences: Developers, Marketers, Founders, or Enterprise decision-makers."
-    },
-    {
-      icon: FiBarChart2,
-      title: "Performance Metrics",
-      desc: "Track signups, demos booked, and CTR directly. We focus on business outcomes, not just vanity metrics."
-    },
-    {
-      icon: FiGlobe,
-      title: "Global Tech Reach",
-      desc: "Access tech communities in key markets. Localize your software launch with regional experts."
-    },
-    {
-      icon: FiSmartphone,
-      title: "Short-Form Video",
-      desc: "Dominate TikTok and Reels with engaging tech snippets that simplify complex value propositions."
+      desc: "Find creators with specific audiences that match your target market. Connect with the right influencers for your product category."
     }
   ];
 
@@ -58,11 +48,11 @@ const Features = () => {
             transition={{ delay: 0.2 }}
             className="text-xl text-slate-600 dark:text-gray-200"
           >
-            The premier marketplace for SaaS and Tech content creation
+            Connecting small-scale startups with authentic micro-influencers
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {features.map((feature, index) => (
             <motion.div
               key={index}
