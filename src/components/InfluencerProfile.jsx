@@ -319,10 +319,10 @@ const InfluencerProfile = () => {
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Portfolio</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {embeds.map((embed) => (
-                    <div key={embed._id} className="rounded-xl overflow-hidden">
+                    <div key={embed._id} className="rounded-xl overflow-hidden h-[600px] flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                       <SocialEmbed
-                        platform={embed.platform}
-                        embedCode={embed.embedCode}
+                        type={embed.platform}
+                        html={embed.embedCode}
                       />
                     </div>
                   ))}

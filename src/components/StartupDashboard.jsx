@@ -621,13 +621,13 @@ const StartupDashboard = () => {
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="glass-panel rounded-2xl overflow-hidden group border border-white/60 dark:border-gray-700 flex flex-col"
                   >
-                    <div className="flex-grow">
-                      <SocialEmbed 
-                        url={item.url} 
-                        html={item.embedHtml} 
-                        type={item.platform} 
-                        title={item.title} 
-                        thumbnail={item.thumbnail} 
+                    <div className="flex-grow h-[600px] flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                      <SocialEmbed
+                        url={item.url}
+                        html={item.embedHtml}
+                        type={item.platform}
+                        title={item.title}
+                        thumbnail={item.thumbnail}
                       />
                     </div>
                     <div className="p-4 bg-white/50 dark:bg-gray-800/50">

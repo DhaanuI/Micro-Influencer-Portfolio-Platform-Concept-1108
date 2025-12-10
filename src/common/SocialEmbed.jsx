@@ -67,13 +67,13 @@ const SocialEmbed = ({ url, html, type, title, thumbnail, hideUsername = false }
     return (
       <div
         ref={containerRef}
-        className="w-full flex justify-center bg-white dark:bg-gray-800 rounded-lg overflow-hidden"
+        className="w-full h-full flex justify-center bg-white dark:bg-gray-800 rounded-lg overflow-hidden"
       >
         {/* Container for the embed code.
             Instagram scripts look for the 'instagram-media' class inside this div
             and replace the blockquote with an interactive iframe. */}
         <div
-          className="w-full flex justify-center items-center social-embed-container"
+          className="w-full h-full flex justify-center items-center social-embed-container overflow-auto"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>

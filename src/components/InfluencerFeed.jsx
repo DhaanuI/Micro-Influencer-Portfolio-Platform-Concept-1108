@@ -241,7 +241,7 @@ const InfluencerFeed = () => {
                     key={`instagram-${index}`}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700"
+                    className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 h-[600px] flex items-center justify-center"
                   >
                     <SocialEmbed html={embed} type="instagram" title={`Post ${index + 1}`} />
                   </motion.div>
@@ -252,7 +252,7 @@ const InfluencerFeed = () => {
                     key={`linkedin-${index}`}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700"
+                    className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 h-[600px] flex items-center justify-center"
                   >
                     <SocialEmbed html={embed} type="linkedin" title={`Post ${index + 1}`} />
                   </motion.div>
@@ -263,7 +263,7 @@ const InfluencerFeed = () => {
                     key={`youtube-${index}`}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700"
+                    className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 h-[600px] flex items-center justify-center"
                   >
                     <SocialEmbed html={embed} type="youtube" title={`Post ${index + 1}`} />
                   </motion.div>

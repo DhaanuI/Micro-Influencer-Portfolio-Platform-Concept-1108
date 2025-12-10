@@ -199,7 +199,7 @@ const StartupFeed = () => {
                           className="group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300"
                         >
                           {/* Embedded Content */}
-                          <div className="relative hide-creator-name">
+                          <div className="relative hide-creator-name h-[600px] flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                             <SocialEmbed
                               html={embedData.html}
                               type={embedData.type}
