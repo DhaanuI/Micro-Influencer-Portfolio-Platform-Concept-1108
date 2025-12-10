@@ -16,19 +16,81 @@ const {
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user, openAuthModal } = useAuth();
+  const { getAllInfluencers } = useInfluencer();
   const [hasUnlockedContact, setHasUnlockedContact] = useState(false);
   const [influencerData, setInfluencerData] = useState(null);
+  const [embeds, setEmbeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [markInterest, setMarkInterest] = useState({ loading: false, error: null });
 
-  // Note: This component is simplified since the backend doesn't have individual influencer profile endpoints
-  // In a real implementation, you would fetch influencer data from the getAllInfluencers endpoint
-  // and filter by ID, or add a new backend endpoint for individual profiles
-
+  // Fetch influencer data from backend
   useEffect(() => {
-    // For now, show a message that this feature needs backend support
-    setLoading(false);
-    setError('Individual influencer profiles require additional backend endpoints');
+    const fetchInfluencer = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get all influencers and filter by ID
+        const result = await getAllInfluencers.execute();
+
+        if (result?.data) {
+          const influencer = result.data.find(inf => inf._id === id);
+
+          if (influencer) {
+            setInfluencerData(influencer);
+
+            // Extract embeds from the influencer data
+            const allEmbeds = [];
+
+            // Add Instagram embeds
+            if (influencer.instagramEmbedLinks && influencer.instagramEmbedLinks.length > 0) {
+              influencer.instagramEmbedLinks.forEach((embedCode, index) => {
+                allEmbeds.push({
+                  _id: `instagram-${index}`,
+                  platform: 'instagram',
+                  embedCode: embedCode
+                });
+              });
+            }
+
+            // Add LinkedIn embeds
+            if (influencer.linkedinEmbedLinks && influencer.linkedinEmbedLinks.length > 0) {
+              influencer.linkedinEmbedLinks.forEach((embedCode, index) => {
+                allEmbeds.push({
+                  _id: `linkedin-${index}`,
+                  platform: 'linkedin',
+                  embedCode: embedCode
+                });
+              });
+            }
+
+            // Add YouTube embeds
+            if (influencer.youtubeEmbedLinks && influencer.youtubeEmbedLinks.length > 0) {
+              influencer.youtubeEmbedLinks.forEach((embedCode, index) => {
+                allEmbeds.push({
+                  _id: `youtube-${index}`,
+                  platform: 'youtube',
+                  embedCode: embedCode
+                });
+              });
+            }
+
+            setEmbeds(allEmbeds);
+          } else {
+            setError('Influencer not found');
+          }
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to load influencer profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchInfluencer();
+    }
   }, [id]);
 
   const handleMarkInterest = async () => {
@@ -36,7 +98,21 @@ const InfluencerProfile = () => {
       openAuthModal('login');
       return;
     }
-    alert('Mark interest feature requires backend implementation');
+
+    setMarkInterest({ loading: true, error: null });
+
+    try {
+      // TODO: Implement actual API call when backend endpoint is ready
+      // await api.startup.markInterest(id, 'Interested in collaboration');
+
+      // For now, show a success message
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      alert('Interest marked successfully! This feature will be fully functional once the backend endpoint is implemented.');
+      setMarkInterest({ loading: false, error: null });
+    } catch (err) {
+      setMarkInterest({ loading: false, error: err.message });
+      alert('Failed to mark interest: ' + err.message);
+    }
   };
 
   // Use backend data or fallback to mock data
